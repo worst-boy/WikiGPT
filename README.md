@@ -28,7 +28,9 @@ WikiGPT is a PyQt5-based desktop application that leverages the power of OpenAI'
 3. Run the application (`python WikiGPT.py`).
 
 
-**You can find the exe file ![here](https://github.com/worst-boy/WikiGPT/blob/main/WikiGPT-Worm.jpg)**
+**You can find the exe file ![here](https://github.com/worst-boy/WikiGPT/releases/download/WikiGPT-V1/WikiGPT.zip)**
+
+
 **Note: The selected model for interactive web content inquiries is text-davinci-002, chosen for its enhanced focus on content compared to other models.**
 
 [![Watch the Video](https://github.com/worst-boy/WikiGPT/blob/main/WikiGPT-Vid.mp4)]
