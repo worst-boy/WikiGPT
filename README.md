@@ -27,7 +27,7 @@ WikiGPT is a PyQt5-based desktop application that leverages the power of OpenAI'
 2. Set up your OpenAI GPT-3 API key (place it in `API-KEY.txt`).
 3. Run the application (`python WikiGPT.py`).
 
-[Download Example File](https://github.com/worst-boy/WikiGPT/releases/download/WikiGPT-V1/WikiGPT.zip)
+[Download the exe file here](https://github.com/worst-boy/WikiGPT/releases/download/WikiGPT-V1/WikiGPT.zip)
 
 
 **Note: The selected model for interactive web content inquiries is text-davinci-002, chosen for its enhanced focus on content compared to other models.**
