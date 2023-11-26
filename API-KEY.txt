@@ -1,0 +1,1 @@
+sk-tb******************************* #input your OpenAi API key here (delete everything and just keep the API)
