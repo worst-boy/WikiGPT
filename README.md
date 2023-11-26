@@ -10,6 +10,9 @@ WikiGPT is a PyQt5-based desktop application that leverages the power of OpenAI'
 - Real-time display of GPT-3 responses.
 - Smooth and dynamic response presentation.
 
+![Exmaple of usage]([path/to/your/image.png](https://github.com/worst-boy/WikiGPT/blob/main/WikiGPT-2023EV.jpg))
+
+
 **Requirements:**
 - Python 3.x
 - PyQt5
