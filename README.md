@@ -1,2 +1,29 @@
-# WikiGPT
-WikiGPT is a simple PyQt5-based desktop application that leverages the power of OpenAI's GPT-3.5 for interactive web content inquiries.
+**WikiGPT: Interactive GPT-3 Powered Web Content Inquiry**
+
+WikiGPT is a PyQt5-based desktop application that leverages the power of OpenAI's GPT-3 model for interactive web content inquiries. With an intuitive interface, users can enter a website URL and a prompt/question to extract relevant information from the web page and ask anything from the website. The application smoothly displays GPT-3 responses in real-time, providing a seamless and user-friendly experience.
+
+**Features:**
+- Fast and easy to use.
+- Can access many websites.
+- User-friendly interface with a dark theme.
+- Input website URL and prompt/question for GPT-3.
+- Real-time display of GPT-3 responses.
+- Smooth and dynamic response presentation.
+
+**Requirements:**
+- Python 3.x
+- PyQt5
+- BeautifulSoup
+- Requests
+- OpenAI GPT-3 API key
+
+**Usage:**
+1. Install the required Python libraries (`pip install PyQt5 beautifulsoup4 requests`).
+2. Set up your OpenAI GPT-3 API key (place it in `API-KEY.txt`).
+3. Run the application (`python WikiGPT.py`).
+
+Certainly! Here's a refined version of the sentence:
+
+**Note: The selected model for interactive web content inquiries is text-davinci-002, chosen for its enhanced focus on content compared to other models.**
+
+Explore and interact with web content effortlessly using WikiGPT!
