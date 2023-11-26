@@ -24,4 +24,6 @@ WikiGPT is a PyQt5-based desktop application that leverages the power of OpenAI'
 
 **Note: The selected model for interactive web content inquiries is text-davinci-002, chosen for its enhanced focus on content compared to other models.**
 
+[![Watch the Video](https://github.com/worst-boy/WikiGPT/blob/main/WikiGPT-Vid.mp4)]
+
 Explore and interact with web content effortlessly using WikiGPT!
