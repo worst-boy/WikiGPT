@@ -12,6 +12,7 @@ WikiGPT is a PyQt5-based desktop application that leverages the power of OpenAI'
 
 
 ![Exmaple of usage](https://github.com/worst-boy/WikiGPT/blob/main/WikiGPT-2023EV.jpg)
+![Exmaple of usage](https://github.com/worst-boy/WikiGPT/blob/main/WikiGPT-Worm.jpg)
 
 
 **Requirements:**
