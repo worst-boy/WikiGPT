@@ -209,7 +209,7 @@ def get_gainers():
         for g in gainers[:5]:
             top_gainers.append(f"{g['symbol']} - {g['priceChangePercent']}%")
         
-        return "Top 5 Gainers:\n" + "\n\n".join(top_gainers) if top_gainers else "No gainers found."
+        return "Top 5 Gainers:\n\n" + "\n".join(top_gainers) if top_gainers else "No gainers found."
     except Exception as e:
         return f"Error fetching gainers: {e}"
 
