@@ -18,6 +18,8 @@ client = Client(API_KEY, API_SECRET)
 TELEGRAM_TOKEN = '6049789416:AAEdassXO8WSeFxaZCSHqprnun6HZhOcVbg'
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
+# Declare crypto_name globally
+crypto_name = None
 
 def get_crypto_info(crypto_name):
     output = []  # Collect all output lines here
@@ -217,9 +219,6 @@ def send_welcome(message):
         "To see this message again, use /help."
     )
     bot.reply_to(message, welcome_text)
-
-# Declare crypto_name globally
-crypto_name = None
 
 @bot.message_handler(commands=['info'])
 def handle_info(message):
