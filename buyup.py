@@ -18,12 +18,12 @@ client = Client(API_KEY, API_SECRET)
 TELEGRAM_TOKEN = '6049789416:AAEdassXO8WSeFxaZCSHqprnun6HZhOcVbg'
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-# Declare crypto_name globally
-crypto_name = None
+# Create a global dictionary to store responses
+data_storage = {}
 
 def get_crypto_info(crypto_name):
     output = []  # Collect all output lines here
-    symbol = f"{crypto_name}USDT"
+    symbol = f"{crypto_name.upper()}USDT"
 
     try:
         info = client.get_symbol_info(symbol)
@@ -220,13 +220,14 @@ def send_welcome(message):
     )
     bot.reply_to(message, welcome_text)
 
-@bot.message_handler(commands=['info'])
+
 def handle_info(message):
     try:
         crypto_name = message.text.split()[1]
-        bot.send_chat_action(message.chat.id, 'typing')  # Add this line
+        bot.send_chat_action(message.chat.id, 'typing')
         response = get_crypto_info(crypto_name)
-        bot.reply_to(message, response, parse_mode='Markdown')  # Added parse_mode for formatting
+        data_storage['response'] = response  # Store response in the dictionary
+        bot.reply_to(message, response, parse_mode='Markdown')
     except IndexError:
         bot.reply_to(message, "Please provide a cryptocurrency name. Example: /info BTC")
     except Exception as e:
@@ -293,7 +294,7 @@ instruction_prompts = {
 
         "Your focus should be on short-term investments (hours to days), assessing whether the coin presents high profit potential."
 
-        f"If the coin does not meet these criteria, make that clear without reservation.\n\n{get_crypto_info(crypto_name)}"
+        f"If the coin does not meet these criteria, make that clear without reservation.\n\n{data_storage['response']}"
 
     )
 
