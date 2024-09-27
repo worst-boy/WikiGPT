@@ -209,7 +209,7 @@ def get_gainers():
         for g in gainers[:5]:
             top_gainers.append(f"{g['symbol']} - {g['priceChangePercent']}%")
         
-        return "Top 5 Gain:\n" + "\n".join(top_gainers) if top_gainers else "No gainers found."
+        return "Top 5 Gainers:\n\n" + "\n".join(top_gainers) if top_gainers else "No gainers found."
     except Exception as e:
         return f"Error fetching gainers: {e}"
 
@@ -230,7 +230,7 @@ def get_losers():
         for l in losers[:5]:
             top_losers.append(f"{l['symbol']} - {l['priceChangePercent']}%")
         
-        return "Top 5 Losers:\n" + "\n".join(top_losers) if top_losers else "No losers found."
+        return "Top 5 Losers:\n\n" + "\n".join(top_losers) if top_losers else "No losers found."
     except Exception as e:
         return f"Error fetching losers: {e}"
 
@@ -240,7 +240,7 @@ def send_welcome(message):
         "Welcome to the Crypto Info Bot!\nHere are the commands you can use:\n\n"
         "/info <crypto_name> - Get information about a specific coin.\n"
         "/gainers - To get the list of top 5 crypto gainers.\n"
-        "/losers - To get the list of top 5 crypto losers."
+        "/losers - To get the list of top 5 crypto losers.\n\n"
         "Example: /info BTC\n"
         "To see this message again, use /help."
     )
