@@ -2,7 +2,6 @@ from binance.client import Client
 from datetime import datetime, timedelta
 import numpy as np
 import telebot
-import pyperclip
 
 # Replace these with your actual API keys
 API_KEY = 'JrKLFNlZxpu5SPEqfsaOpl6S3SYgn33q5WEt8LdayeJrlpGiex8pt3TACAxXA0t5'
@@ -63,9 +62,8 @@ def get_crypto_info(crypto_name):
     except Exception as e:
         output.append(f"Error fetching information: {e}")
 
-    # Join the output and copy it to the clipboard
+    # Join the output and return it
     final_output = '\n'.join(output)
-    pyperclip.copy(final_output)  # Copy the output to the clipboard
     return final_output
 
 def calculate_technical_indicators(prices, dates):
@@ -189,37 +187,24 @@ def get_additional_info(symbol):
         for i, ask in enumerate(depth['asks'][:5]):
             output.append(f"Ask {i+1}: Price: {ask[0]}, Quantity: {ask[1]}")
     except Exception as e:
-        output.append(f"Error fetching order book data: {e}")
-
+        output.append(f"Error fetching order book: {e}")
+    
     return output
 
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=['start'])
 def send_welcome(message):
-    welcome_text = (
-        "Welcome to the Crypto Info Bot!\nHere are the commands you can use:\n\n"
-        "/info <crypto_name> - Get information about a specific cryptocurrency.\n\n"
-        "Example: /info BTC\n"
-        "To see this message again, use /help."
-    )
-    bot.reply_to(message, welcome_text)
+    bot.reply_to(message, "Welcome to the Crypto Bot! Use /crypto <symbol> to get crypto information.")
 
-@bot.message_handler(commands=['info'])
-def handle_info(message):
-    try:
-        crypto_name = message.text.split()[1]
-        bot.send_chat_action(message.chat.id, 'typing')  # Add this line
-        response = get_crypto_info(crypto_name)
-        bot.reply_to(message, response, parse_mode='Markdown')  # Added parse_mode for formatting
-    except IndexError:
-        bot.reply_to(message, "Please provide a cryptocurrency name. Example: /info BTC")
-    except Exception as e:
-        bot.reply_to(message, f"An error occurred: {e}")
+@bot.message_handler(commands=['crypto'])
+def crypto_command(message):
+    command_parts = message.text.split()
+    if len(command_parts) < 2:
+        bot.reply_to(message, "Please provide a cryptocurrency symbol (e.g., BTC).")
+        return
 
-
-@bot.message_handler(func=lambda message: True)
-def handle_invalid_input(message):
-    bot.reply_to(message, "Invalid command. Please use /help to see available commands.")
+    crypto_name = command_parts[1]
+    result = get_crypto_info(crypto_name)
+    bot.reply_to(message, result)
 
 # Start the bot
-if __name__ == '__main__':
-    bot.polling(none_stop=True)
+bot.polling()
