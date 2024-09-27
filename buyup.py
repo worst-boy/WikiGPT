@@ -23,7 +23,7 @@ crypto_name = None
 
 def get_crypto_info(crypto_name):
     output = []  # Collect all output lines here
-    symbol = f"{crypto_name.upper()}USDT"
+    symbol = f"{crypto_name}USDT"
 
     try:
         info = client.get_symbol_info(symbol)
@@ -258,9 +258,6 @@ model = genai.GenerativeModel(
     generation_config=generation_config,
     safety_settings=safety_settings,
 )
-
-# Initialize the bot with your Telegram bot API key
-bot = telebot.TeleBot("7146546023:AAGrk-CaPkCs5bSSR1OjzTCwvSoartmpW2M")
 
 # Directory to store conversation logs
 LOGS_DIR = "./conversation_logs/"
