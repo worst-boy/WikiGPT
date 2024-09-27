@@ -240,7 +240,7 @@ def send_welcome(message):
         "Welcome to the Crypto Info Bot!\nHere are the commands you can use:\n\n"
         "/info <crypto_name> - Get information about a specific coin.\n"
         "/gainers - To get the list of top 5 crypto gainers.\n"
-        "/losers - To get the list of top 5 crypto losers."
+        "/losers - To get the list of top 5 crypto losers.\n\n"
         "Example: /info BTC\n"
         "To see this message again, use /help."
     )
