@@ -191,11 +191,56 @@ def get_additional_info(symbol):
 
     return output
 
+# New function to get gainers
+def get_gainers():
+    gainers = []
+    try:
+        # Get the top gainers from the 24h price changes
+        tickers = client.get_ticker()
+        for ticker in tickers:
+            if ticker['symbol'].endswith('USDT'):  # Filter for USDT pairs
+                gainers.append(ticker)
+        
+        # Sort gainers by price change percent
+        gainers.sort(key=lambda x: float(x['priceChangePercent']), reverse=True)
+        
+        # Format the top 5 gainers
+        top_gainers = []
+        for g in gainers[:5]:
+            top_gainers.append(f"{g['symbol']} - {g['priceChangePercent']}%")
+        
+        return "Top 5 Gain:\n" + "\n".join(top_gainers) if top_gainers else "No gainers found."
+    except Exception as e:
+        return f"Error fetching gainers: {e}"
+
+def get_losers():
+    losers = []
+    try:
+        # Get the top losers from the 24h price changes
+        tickers = client.get_ticker()
+        for ticker in tickers:
+            if ticker['symbol'].endswith('USDT'):  # Filter for USDT pairs
+                losers.append(ticker)
+        
+        # Sort losers by price change percent
+        losers.sort(key=lambda x: float(x['priceChangePercent']))
+        
+        # Format the top 5 losers
+        top_losers = []
+        for l in losers[:5]:
+            top_losers.append(f"{l['symbol']} - {l['priceChangePercent']}%")
+        
+        return "Top 5 Losers:\n" + "\n".join(top_losers) if top_losers else "No losers found."
+    except Exception as e:
+        return f"Error fetching losers: {e}"
+
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     welcome_text = (
         "Welcome to the Crypto Info Bot!\nHere are the commands you can use:\n\n"
-        "/info <crypto_name> - Get information about a specific cryptocurrency.\n\n"
+        "/info <crypto_name> - Get information about a specific coin.\n"
+        "/gainers - To get the list of top 5 crypto gainers.\n"
+        "/losers - To get the list of top 5 crypto losers."
         "Example: /info BTC\n"
         "To see this message again, use /help."
     )
@@ -212,7 +257,18 @@ def handle_info(message):
         bot.reply_to(message, "Please provide a cryptocurrency name. Example: /info BTC")
     except Exception as e:
         bot.reply_to(message, f"An error occurred: {e}")
+        
+@bot.message_handler(commands=['gainers'])
+def gainers_command(message):
+    bot.send_chat_action(message.chat.id, 'typing')  # Add this line
+    gainers_info = get_gainers()
+    bot.reply_to(message, gainers_info)
 
+@bot.message_handler(commands=['losers'])
+def losers_command(message):
+    bot.send_chat_action(message.chat.id, 'typing')  # Add this line
+    losers_info = get_losers()
+    bot.reply_to(message, losers_info)
 
 @bot.message_handler(func=lambda message: True)
 def handle_invalid_input(message):
