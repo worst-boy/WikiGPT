@@ -5,7 +5,7 @@ import google.generativeai as genai
 import time
 
 # Configure Gemini AI
-genai.configure(api_key="AIzaSyBTMCZkNWBmMA3OwGD9HPu84Tlh47q-LFY") 
+genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw") 
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Configure Telegram Bot
