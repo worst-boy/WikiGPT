@@ -39,7 +39,7 @@ system_instruction = "This is a transcript extracted from a YouTube video. Your 
 model = initialize_model(api_key, system_instruction)
 
 # Configure Telegram Bot
-API_TOKEN = "8155634930:AAFYhwBGAWBic-j9FTHf5uB19wG164BHZ2c"
+API_TOKEN = "7734180840:AAEevTIVXIv2VAozec9Y8Qx3B2DM2AhrIkQ"
 bot = telebot.TeleBot(API_TOKEN)
 
 # Store user states for interaction
@@ -70,8 +70,20 @@ def send_transcript_to_gemini(transcript):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "👋 Welcome! Send me a YouTube video URL to get started.\nUse /restart to start over with a new video. 🎥")
-
+    welcome_message = (
+        "👋 **Welcome to the YouTube Transcript AI Bot!**\n\n"
+        "📜 **What This Bot Can Do:**\n"
+        "- Extracts the transcript from a YouTube video.\n"
+        "- Processes the transcript with advanced AI for analysis.\n"
+        "- Answers questions based solely on the video content.\n\n"
+        "🎯 **How to Use:**\n"
+        "1️⃣ Send a valid YouTube video URL.\n"
+        "2️⃣ Wait for the transcript to be processed.\n"
+        "3️⃣ Ask any questions about the video content!\n\n"
+        "💡 Use the /restart command to start over anytime. 🚀"
+    )
+    bot.reply_to(message, welcome_message, parse_mode='Markdown')
+    
 @bot.message_handler(commands=['restart'])
 def restart_session(message):
     user_id = message.chat.id
@@ -89,21 +101,30 @@ def handle_message(message):
             video_id = extract_video_id(video_url)
 
             if not video_id:
-                bot.reply_to(message, "❌ Invalid YouTube URL. Please send a valid one. 🌐")
+                bot.reply_to(
+                    message,
+                    "❌ **Invalid YouTube URL!**\n"
+                    "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐",
+                    parse_mode='Markdown'
+                )
                 return
 
-            fetching_msg = bot.reply_to(message, "⏳ Fetching the transcript... 🔍")
+            fetching_msg = bot.reply_to(message, "⏳ **Fetching the transcript...** 🔍", parse_mode='Markdown')
             transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
-            processing_msg = bot.reply_to(message, "🔄 Processing transcript with Gemini AI... 🤖")
+            processing_msg = bot.reply_to(message, "🔄 **Processing transcript with Gemini AI...** 🤖", parse_mode='Markdown')
             gemini_response = send_transcript_to_gemini(transcript)
 
             user_states[user_id] = {
                 "gemini_context": gemini_response,
                 "transcript": transcript
             }
-            bot.edit_message_text("✅ Transcript processed. You can now ask questions about the video. 🎤", 
-                                  message.chat.id, processing_msg.message_id)
+            bot.edit_message_text(
+                "✅ **Transcript processed!** You can now ask questions about the video. 🎤",
+                message.chat.id,
+                processing_msg.message_id,
+                parse_mode='Markdown'
+            )
             bot.delete_message(message.chat.id, fetching_msg.message_id)
 
         else:
@@ -115,10 +136,19 @@ def handle_message(message):
 
             gemini_response = model.generate_content(f"{gemini_context}\n\nQuestion: {user_question}")
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
-            bot.reply_to(message, gemini_response.text)
+            bot.reply_to(
+                message,
+                f"**Answer:**\n{gemini_response.text}",
+                parse_mode='Markdown'
+            )
 
     except Exception as e:
-        bot.reply_to(message, f"⚠️ An error occurred: {e}. Please try again. 🙇")
+        bot.reply_to(
+            message,
+            f"⚠️ **An error occurred:** {e}\n"
+            "Please try again or contact support. 🙇",
+            parse_mode='Markdown'
+        )
         print(f"Error in handle_message: {e}")
 
 if __name__ == "__main__":
