@@ -34,6 +34,7 @@ def initialize_model(api_key, system_instruction):
 # Define the API key and system instruction
 api_key = "AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw"
 system_instruction = "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions based solely on the content of this transcript. \nFollow these guidelines: \n\n1. Stay within the transcript: Do not add any external information, personal opinions, or assumptions. \nYour answers must strictly adhere to the information provided. \n2. Provide accurate and concise responses: Answer directly and clearly, focusing on the specific details in the transcript. \nAvoid unnecessary elaboration or unrelated details. \n3. Contextualize as needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key sections to provide context. \n4. Organize your answers: Present responses logically and use bullet points or lists if there are multiple parts. Ensure explanations flow naturally. \n5. Acknowledge uncertainty: If the transcript does not contain the information needed to answer, state: 'The transcript does not provide information on this topic.'.\n Remember your responses should be organized and clean not just paragraphs, focus on details too. (You speak in to languages English and Persian, if user interacted with English you speak English else if Persian, you speak in Persian.)"
+
 # Initialize the Gemini AI model
 model = initialize_model(api_key, system_instruction)
 
@@ -82,7 +83,8 @@ def send_welcome(message):
         "💡 Use the /restart command to start over anytime. 🚀"
     )
     bot.reply_to(message, welcome_message, parse_mode='Markdown')
-    
+
+
 @bot.message_handler(commands=['restart'])
 def restart_session(message):
     user_id = message.chat.id
@@ -137,7 +139,7 @@ def handle_message(message):
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(
                 message,
-                f"{gemini_response.text}",
+                f"**Answer:**\n{gemini_response.text}",
                 parse_mode='Markdown'
             )
 
