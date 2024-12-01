@@ -34,24 +34,31 @@ def send_transcript_to_gemini(transcript):
     Sends the transcript to Gemini AI and initializes the discussion.
     """
     try:
+        # Enhanced prompt
         prompt = (
-            """This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions based solely on the content of this transcript. Follow these guidelines for your responses:
-
-            Stay Within the Transcript: Do not add any external information, personal opinions, or assumptions. Your answers must strictly adhere to the information provided in the transcript.
-            
-            Provide Accurate and Concise Responses: Answer each question directly and clearly, focusing on the specific details found in the transcript. Avoid unnecessary elaboration or unrelated details.
-            
-            Contextualize as Needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key sections to provide context for your response.
-            
-            Organize Your Answers: Present your responses in a logical and structured manner. Use bullet points or numbered lists if the question has multiple parts, and ensure your explanation flows naturally.
-            
-            Acknowledge Uncertainty: If the transcript does not contain the information needed to answer a question, state explicitly: 'The transcript does not provide information on this topic.'
-            
-            Now, proceed to answer questions accurately based on transcript."""
+            "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions "
+            "solely based on the content of this transcript. Follow these guidelines for your responses:\n\n"
+            "1. Stay Within the Transcript: Do not add any external information, personal opinions, or assumptions. Your answers "
+            "must strictly adhere to the information provided in the transcript.\n"
+            "2. Provide Accurate and Concise Responses: Answer each question directly and clearly, focusing on the specific details "
+            "found in the transcript. Avoid unnecessary elaboration or unrelated details.\n"
+            "3. Contextualize as Needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key "
+            "sections to provide context for your response.\n"
+            "4. Organize Your Answers: Present your responses in a logical and structured manner. Use bullet points or numbered lists "
+            "if the question has multiple parts, and ensure your explanation flows naturally.\n"
+            "5. Acknowledge Uncertainty: If the transcript does not contain the information needed to answer a question, state explicitly: "
+            "'The transcript does not provide information on this topic.'\n\n"
+            "Here is the transcript for your reference:\n\n"
         )
+        
+        # Adding the transcript content
         prompt += "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
+        
+        # Generate and return the AI's response
         response = model.generate_content(prompt)
         return response.text
+
+    
     except Exception as e:
         print(f"Error interacting with Gemini AI: {e}")
         return "An error occurred while interacting with Gemini AI."
