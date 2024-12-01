@@ -36,8 +36,8 @@ def send_transcript_to_gemini(transcript):
     try:
         prompt = (
             "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions  "
-            "solely based on the content of this transcript. Follow these guidelines for your responses:\n\n"
-            "1. Stay Within the Transcript: Do not add any external information, personal opinions, or assumptions. Your answers "
+            "solely based on the content of this transcript. Follow these guidelines for your responses"
+            "1. Stay Within the Transcript, Do not add any external information, personal opinions, or assumptions. Your answers "
             "Here is the transcript for your reference:\n\n"
         )
         prompt += "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
