@@ -138,7 +138,7 @@ def handle_message(message):
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(
                 message,
-                f"**Answer:**\n{gemini_response.text}",
+                f"{gemini_response.text}",
                 parse_mode='Markdown'
             )
 
