@@ -1,4 +1,4 @@
-import telebot 
+import telebot
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 import google.generativeai as genai
@@ -35,20 +35,9 @@ def send_transcript_to_gemini(transcript):
     """
     try:
         prompt = (
-            "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions "
-            "solely based on the content of this transcript. Follow these guidelines for your responses:\n\n"
-            "1. Stay Within the Transcript: Do not add any external information, personal opinions, or assumptions. Your answers "
-            "must strictly adhere to the information provided in the transcript.\n"
-            "2. Provide Accurate and Concise Responses: Answer each question directly and clearly, focusing on the specific details "
-            "found in the transcript. Avoid unnecessary elaboration or unrelated details.\n"
-            "3. Contextualize as Needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key "
-            "sections to provide context for your response.\n"
-            "4. Organize Your Answers: Present your responses in a logical and structured manner. Use bullet points or numbered lists "
-            "if the question has multiple parts, and ensure your explanation flows naturally.\n"
-            "5. Acknowledge Uncertainty: If the transcript does not contain the information needed to answer a question, state explicitly: "
-            "'The transcript does not provide information on this topic.'\n\n"
-            "Here is the transcript for your reference:\n\n"
-        )    
+            "This is the YouTube video transcript. You should answer questions about it just based on this transcript "
+            "(Do not add anything of your own and just answer solely based on the transcript):\n\n"
+        )
         prompt += "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
         response = model.generate_content(prompt)
         return response.text
@@ -58,7 +47,7 @@ def send_transcript_to_gemini(transcript):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Welcome! Send me a YouTube video URL to get started.\nUse /restart to start over with a new video.")
+    bot.reply_to(message, "👋 Welcome! Send me a YouTube video URL to get started.\nUse /restart to start over with a new video. 🎥")
 
 @bot.message_handler(commands=['restart'])
 def restart_session(message):
@@ -68,7 +57,7 @@ def restart_session(message):
     user_id = message.chat.id
     if user_id in user_states:
         del user_states[user_id]
-    bot.reply_to(message, "Session restarted. Send a new YouTube video URL to begin.")
+    bot.reply_to(message, "🔄 Session restarted. Send a new YouTube video URL to begin. 🚀")
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
@@ -81,15 +70,15 @@ def handle_message(message):
             video_id = extract_video_id(video_url)
 
             if not video_id:
-                bot.reply_to(message, "Invalid YouTube URL. Please send a valid one.")
+                bot.reply_to(message, "❌ Invalid YouTube URL. Please send a valid one. 🌐")
                 return
 
             # Step 2: Fetch transcript
-            bot.reply_to(message, "Fetching the transcript...")
+            fetching_msg = bot.reply_to(message, "⏳ Fetching the transcript... 🔍")
             transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
             # Step 3: Send transcript to Gemini AI
-            bot.reply_to(message, "Processing transcript with Gemini AI...")
+            processing_msg = bot.reply_to(message, "🔄 Processing transcript with Gemini AI... 🤖")
             gemini_response = send_transcript_to_gemini(transcript)
 
             # Step 4: Save transcript and allow interaction
@@ -97,7 +86,10 @@ def handle_message(message):
                 "gemini_context": gemini_response,
                 "transcript": transcript
             }
-            bot.reply_to(message, "Transcript processed. You can now ask questions about the video.")
+            bot.edit_message_text("✅ Transcript processed. You can now ask questions about the video. 🎤", 
+                                  message.chat.id, processing_msg.message_id)
+            bot.delete_message(message.chat.id, fetching_msg.message_id)
+
         else:
             # User interaction with Gemini AI
             gemini_context = user_states[user_id]["gemini_context"]
@@ -112,13 +104,13 @@ def handle_message(message):
             bot.reply_to(message, gemini_response.text)
 
     except Exception as e:
-        bot.reply_to(message, f"An error occurred: {e}")
+        bot.reply_to(message, f"⚠️ An error occurred: {e}. Please try again. 🙇")
         print(f"Error in handle_message: {e}")
 
 # Error handling for unexpected issues
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def fallback_handler(message):
-    bot.reply_to(message, "Sorry, I couldn't process that. Please try again.")
+    bot.reply_to(message, "Sorry, I couldn't process that. Please try again. 🤔")
 
 if __name__ == "__main__":
     try:
