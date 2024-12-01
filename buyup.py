@@ -27,27 +27,29 @@ def chat_with_video(transcript):
     """
     Initiates a conversation with Gemini AI using the video transcript.
     """
-    # Initial message to Gemini AI
+    # Print the transcript for the user
+    print("\nHere is the transcript of the video:\n")
+    print(transcript)
+    print("\nGemini AI is ready. You can now ask questions about the video.\n")
+    
+    # Initial prompt to Gemini AI
     initial_prompt = (
         "This is the transcript of a YouTube video. "
         "Answer any questions about the video based solely on this transcript:\n\n"
         f"{transcript}"
     )
-    
-    # Send the transcript to Gemini AI
-    response = model.generate_content(initial_prompt)
-    print("Gemini AI is ready. You can now ask questions about the video.")
+    model.generate_content(initial_prompt)  # Send transcript context
     
     # Start conversation loop
     while True:
-        user_input = input("\nYou: ")
+        user_input = input("You: ")
         if user_input.lower() in ["exit", "quit"]:
             print("Exiting the conversation. Goodbye!")
             break
         
         # Use the initial context along with the user input for follow-ups
         follow_up_prompt = (
-            f"Based on the transcript and the context of the video, answer the following question:\n"
+            f"Based on the transcript provided earlier, answer the following question:\n"
             f"{user_input}"
         )
         follow_up_response = model.generate_content(follow_up_prompt)
