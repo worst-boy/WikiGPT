@@ -6,7 +6,33 @@ import time
 
 # Configure Gemini AI
 genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw") 
-model = genai.GenerativeModel("gemini-1.5-flash")
+
+safety_settings = [
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+]
+
+# Set up generation configuration and safety settings
+generation_config = {
+    "temperature": 0.8,
+    "top_p": 1,
+    "top_k": 1,
+    "max_output_tokens": 2048,
+}
+
+# Initialize the model with custom configuration and safety settings
+def initialize_model(api_key, system_instruction):
+    genai.configure(api_key=api_key)
+    return genai.GenerativeModel(
+        model_name="gemini-1.5-flash-002",
+        generation_config=generation_config,
+        safety_settings=safety_settings,
+        system_instruction=system_instruction
+    )
+
+api_key = "AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw"  # Initial API key
 
 # Configure Telegram Bot
 API_TOKEN = "8155634930:AAFYhwBGAWBic-j9FTHf5uB19wG164BHZ2c"
@@ -34,7 +60,7 @@ def send_transcript_to_gemini(transcript):
     Sends the transcript to Gemini AI and initializes the discussion.
     """
     try:
-        prompt = ("This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions based solely on the content of this transcript. Follow these guidelines: 1. Stay within the transcript: Do not add any external information, personal opinions, or assumptions. Your answers must strictly adhere to the information provided. 2. Provide accurate and concise responses: Answer directly and clearly, focusing on the specific details in the transcript. Avoid unnecessary elaboration or unrelated details. 3. Contextualize as needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key sections to provide context. 4. Organize your answers: Present responses logically and use bullet points or lists if there are multiple parts. Ensure explanations flow naturally. 5. Acknowledge uncertainty: If the transcript does not contain the information needed to answer, state: 'The transcript does not provide information on this topic.' Here is the transcript for your reference: [Insert Transcript Here]. Now, proceed to answer questions accurately based on this transcript.")
+        prompt = ("This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions based solely on the content of this transcript. \nFollow these guidelines: \n\n1. Stay within the transcript: Do not add any external information, personal opinions, or assumptions. \nYour answers must strictly adhere to the information provided. \n2. Provide accurate and concise responses: Answer directly and clearly, focusing on the specific details in the transcript. \nAvoid unnecessary elaboration or unrelated details. \n3. Contextualize as needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key sections to provide context. \n4. Organize your answers: Present responses logically and use bullet points or lists if there are multiple parts. Ensure explanations flow naturally. \n5. Acknowledge uncertainty: If the transcript does not contain the information needed to answer, state: 'The transcript does not provide information on this topic.' \n\n Now, proceed to answer questions accurately based on the transcript.")
 
         prompt += "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
         response = model.generate_content(prompt)
