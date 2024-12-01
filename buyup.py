@@ -59,7 +59,7 @@ def extract_video_id(url):
 def send_transcript_to_gemini(transcript):
     try:
         prompt = (
-            "This is a transcript extracted from a YouTube video\n Now, proceed to answer questions accurately based on the transcript(Your responses should be clean, organized and detailed not in paragraphs), You can response both in Persian and English and not limited.\n\n"
+            "This is a transcript extracted from a YouTube video\n Now, proceed to answer questions accurately based on the transcript(Your responses should be clean, organized and detailed not in paragraphs), You can response both in Persian and English and not limited(Your responses are highly detailed and organized not just summerized! use lists, headers and these stuffs to make your responses the best).\n\n"
             + "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
         )
         response = model.generate_content(prompt)
