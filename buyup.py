@@ -26,7 +26,7 @@ generation_config = {
 def initialize_model(api_key, system_instruction):
     genai.configure(api_key=api_key)
     return genai.GenerativeModel(
-        model_name="gemini-1.5-flash-002",
+        model="gemini-1.5-flash-002",
         generation_config=generation_config,
         safety_settings=safety_settings,
         system_instruction=system_instruction
