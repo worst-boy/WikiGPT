@@ -33,7 +33,7 @@ def initialize_model(api_key, system_instruction):
 
 # Define the API key and system instruction
 api_key = "AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw"
-system_instruction = "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions based solely on the content of this transcript. \nFollow these guidelines: \n\n1. Stay within the transcript: Do not add any external information, personal opinions, or assumptions. \nYour answers must strictly adhere to the information provided. \n2. Provide accurate and concise responses: Answer directly and clearly, focusing on the specific details in the transcript. \nAvoid unnecessary elaboration or unrelated details. \n3. Contextualize as needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key sections to provide context. \n4. Organize your answers: Present responses logically and use bullet points or lists if there are multiple parts. Ensure explanations flow naturally. \n5. Acknowledge uncertainty: If the transcript does not contain the information needed to answer, state: 'The transcript does not provide information on this topic.'.\n Remember your responses should be organized and clean not just paragraphs, focus on details too. (You speak in to languages English and Persian, if user interacted with English you speak English else if Persian, you speak in Persian.)"
+system_instruction = "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions based solely on the content of this transcript. \nFollow these guidelines: \n\n1. Stay within the transcript: Do not add any external information, personal opinions, or assumptions. \nYour answers must strictly adhere to the information provided. \n2. Provide accurate and concise responses: Answer directly and clearly, focusing on the specific details in the transcript. \nAvoid unnecessary elaboration or unrelated details. \n3. Contextualize as needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key sections to provide context. \n4. Organize your answers: Present responses logically and use bullet points or lists if there are multiple parts. Ensure explanations flow naturally. \n5. Acknowledge uncertainty: If the transcript does not contain the information needed to answer, state: 'The transcript does not provide information on this topic.'.\n Remember your responses should be organized and clean not just paragraphs, focus on details too. (You speak in both languages English and Persian, if user interacted with English you speak English else if Persian, you speak in Persian.)"
 
 # Initialize the Gemini AI model
 model = initialize_model(api_key, system_instruction)
@@ -59,7 +59,7 @@ def extract_video_id(url):
 def send_transcript_to_gemini(transcript):
     try:
         prompt = (
-            "This is a transcript extracted from a YouTube video\n Now, proceed to answer questions accurately based on the transcript(Your responses should be clean, organized and detailed not in paragraphs).\n\n"
+            "This is a transcript extracted from a YouTube video\n Now, proceed to answer questions accurately based on the transcript(Your responses should be clean, organized and detailed not in paragraphs), You can response both in Persian and English and not limited.\n\n"
             + "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
         )
         response = model.generate_content(prompt)
@@ -139,7 +139,7 @@ def handle_message(message):
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(
                 message,
-                f"**Answer:**\n{gemini_response.text}",
+                f"{gemini_response.text}",
                 parse_mode='Markdown'
             )
 
