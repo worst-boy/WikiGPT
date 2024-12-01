@@ -35,8 +35,19 @@ def send_transcript_to_gemini(transcript):
     """
     try:
         prompt = (
-            "This is the YouTube video transcript. You should answer questions about it just based on this transcript "
-            "(Do not add anything of your own and just answer solely based on the transcript):\n\n"
+            "This is a transcript extracted from a YouTube video. Your task is to act as an expert analyst and answer any questions  "
+            "solely based on the content of this transcript. Follow these guidelines for your responses:\n\n"
+            "1. Stay Within the Transcript: Do not add any external information, personal opinions, or assumptions. Your answers "
+            "must strictly adhere to the information provided in the transcript.\n"
+            "2. Provide Accurate and Concise Responses: Answer each question directly and clearly, focusing on the specific details "
+            "found in the transcript. Avoid unnecessary elaboration or unrelated details.\n"
+            "3. Contextualize as Needed: If the question refers to a part of the transcript, include relevant quotes or paraphrase key "
+            "sections to provide context for your response.\n"
+            "4. Organize Your Answers: Present your responses in a logical and structured manner. Use bullet points or numbered lists "
+            "if the question has multiple parts, and ensure your explanation flows naturally.\n"
+            "5. Acknowledge Uncertainty: If the transcript does not contain the information needed to answer a question, state explicitly: "
+            "'The transcript does not provide information on this topic.'\n\n"
+            "Here is the transcript for your reference:\n\n"
         )
         prompt += "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
         response = model.generate_content(prompt)
