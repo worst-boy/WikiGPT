@@ -2,6 +2,7 @@ import telebot
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 import google.generativeai as genai
+import time
 
 # Configure Gemini AI
 genai.configure(api_key="AIzaSyBTMCZkNWBmMA3OwGD9HPu84Tlh47q-LFY") 
@@ -46,12 +47,23 @@ def send_transcript_to_gemini(transcript):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Welcome! Send me a YouTube video URL to get started.")
+    bot.reply_to(message, "Welcome! Send me a YouTube video URL to get started.\nUse /restart to start over with a new video.")
+
+@bot.message_handler(commands=['restart'])
+def restart_session(message):
+    """
+    Clears the user state to allow a new session.
+    """
+    user_id = message.chat.id
+    if user_id in user_states:
+        del user_states[user_id]
+    bot.reply_to(message, "Session restarted. Send a new YouTube video URL to begin.")
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
         user_id = message.chat.id
+
         if user_id not in user_states:
             # Step 1: Extract video ID
             video_url = message.text
@@ -69,17 +81,25 @@ def handle_message(message):
             bot.reply_to(message, "Processing transcript with Gemini AI...")
             gemini_response = send_transcript_to_gemini(transcript)
 
-            # Step 4: Save state and allow interaction
+            # Step 4: Save transcript and allow interaction
             user_states[user_id] = {
-                "gemini_context": gemini_response
+                "gemini_context": gemini_response,
+                "transcript": transcript
             }
             bot.reply_to(message, "Transcript processed. You can now ask questions about the video.")
         else:
             # User interaction with Gemini AI
             gemini_context = user_states[user_id]["gemini_context"]
             user_question = message.text
+
+            # Typing indicator
+            bot.send_chat_action(user_id, 'typing')
+            time.sleep(.5)  # Simulates typing delay
+
             gemini_response = model.generate_content(f"{gemini_context}\n\nQuestion: {user_question}")
+            user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(message, gemini_response.text)
+
     except Exception as e:
         bot.reply_to(message, f"An error occurred: {e}")
         print(f"Error in handle_message: {e}")
