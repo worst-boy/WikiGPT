@@ -3,6 +3,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 import google.generativeai as genai
 import time
+import re
 
 # Configure Gemini AI
 genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw") 
@@ -21,6 +22,10 @@ generation_config = {
     "max_output_tokens": 2048,
 }
 
+def escape_markdown(text):
+    """Escape special characters for Markdown parsing in Telegram."""
+    return re.sub(r"([_*[\]()~`>#+-=|{}.!])", r"\\\1", text)
+
 # Initialize the model
 def initialize_model(api_key, system_instruction):
     genai.configure(api_key=api_key)
@@ -33,7 +38,14 @@ def initialize_model(api_key, system_instruction):
 
 # Define the API key and system instruction
 api_key = "AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw"
-system_instruction = "You are now a professional, youtube video transcript will be provided for you and you well response with the most organized, clean, complete, detailed responses. Your responses are organized and detialed always using lists, numbers, header..etc. you do not response with just paragraphs but organized responses. You only response based on the transcript and you do not add anything else from yourself! You can speak in Persian as well and can response in Persian language too!"
+system_instruction = (
+    "You are now a professional. YouTube video transcript will be provided to you, "
+    "and you will respond with the most organized, clean, complete, and detailed responses. "
+    "Your responses are organized and detailed, always using lists, numbers, headers, etc. "
+    "You do not respond with just paragraphs but provide organized responses. "
+    "You only respond based on the transcript and do not add anything else from yourself! "
+    "You can speak in Persian as well and can respond in Persian too!"
+)
 
 # Initialize the Gemini AI model
 model = initialize_model(api_key, system_instruction)
@@ -59,7 +71,11 @@ def extract_video_id(url):
 def send_transcript_to_gemini(transcript):
     try:
         prompt = (
-            "This is a transcript extracted from a YouTube video\n Now, proceed to response accurately based on the transcript, You can response in Persian as well and not limited!(Your responses should be Clean, Organized and Detailed. Do not put everything in paragraphs but make them organized!), \n\n"
+            "This is a transcript extracted from a YouTube video.\n"
+            "Now, proceed to respond accurately based on the transcript. "
+            "You can respond in Persian as well and are not limited! "
+            "(Your responses should be Clean, Organized, and Detailed. "
+            "Do not put everything in paragraphs but make them organized!)\n\n"
             + "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
         )
         response = model.generate_content(prompt)
@@ -71,12 +87,12 @@ def send_transcript_to_gemini(transcript):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     welcome_message = (
-        "👋 **Welcome to the YouTube Transcript AI Bot!**\n\n"
-        "📜 **What This Bot Can Do:**\n"
+        "👋 *Welcome to the YouTube Transcript AI Bot!*\n\n"
+        "📜 *What This Bot Can Do:*\n"
         "- Extracts the transcript from a YouTube video.\n"
         "- Processes the transcript with advanced AI for analysis.\n"
         "- Answers questions based solely on the video content.\n\n"
-        "🎯 **How to Use:**\n"
+        "🎯 *How to Use:*\n"
         "1️⃣ Send a valid YouTube video URL.\n"
         "2️⃣ Wait for the transcript to be processed.\n"
         "3️⃣ Ask any questions about the video content!\n\n"
@@ -104,16 +120,16 @@ def handle_message(message):
             if not video_id:
                 bot.reply_to(
                     message,
-                    "❌ **Invalid YouTube URL!**\n"
+                    "❌ *Invalid YouTube URL!*\n"
                     "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐",
                     parse_mode='Markdown'
                 )
                 return
 
-            fetching_msg = bot.reply_to(message, "⏳ **Fetching the transcript...** 🔍", parse_mode='Markdown')
+            fetching_msg = bot.reply_to(message, "⏳ *Fetching the transcript...* 🔍", parse_mode='Markdown')
             transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
-            processing_msg = bot.reply_to(message, "🔄 **Processing transcript with Gemini AI...** 🤖", parse_mode='Markdown')
+            processing_msg = bot.reply_to(message, "🔄 *Processing transcript with Gemini AI...* 🤖", parse_mode='Markdown')
             gemini_response = send_transcript_to_gemini(transcript)
 
             user_states[user_id] = {
@@ -121,7 +137,7 @@ def handle_message(message):
                 "transcript": transcript
             }
             bot.edit_message_text(
-                "✅ **Transcript processed!** You can now ask questions about the video. 🎤",
+                "✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤",
                 message.chat.id,
                 processing_msg.message_id,
                 parse_mode='Markdown'
@@ -130,7 +146,7 @@ def handle_message(message):
 
         else:
             gemini_context = user_states[user_id]["gemini_context"]
-            user_question = message.text
+            user_question = escape_markdown(message.text)
 
             bot.send_chat_action(user_id, 'typing')
             time.sleep(.5)
@@ -139,14 +155,14 @@ def handle_message(message):
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(
                 message,
-                f"{gemini_response.text}",
+                escape_markdown(gemini_response.text),
                 parse_mode='Markdown'
             )
 
     except Exception as e:
         bot.reply_to(
             message,
-            f"⚠️ **An error occurred:** {e}\n"
+            f"⚠️ *An error occurred:* {escape_markdown(str(e))}\n"
             "Please try again or contact support. 🙇",
             parse_mode='Markdown'
         )
