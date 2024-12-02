@@ -6,7 +6,7 @@ import time
 import re
 
 # Configure Gemini AI
-genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw") 
+genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw")
 
 safety_settings = [
     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
@@ -75,7 +75,7 @@ def send_transcript_to_gemini(transcript):
             "You can respond in Persian as well and are not limited! "
             "(Your responses should be Clean, Organized, and Detailed. "
             "Do not put everything in paragraphs but make them organized!)\n\n"
-            + "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
+            + "\n".join([f"[{entry['start']:.2f}s]: {escape_markdown(entry['text'])}" for entry in transcript])
         )
         response = model.generate_content(prompt)
         return response.text
@@ -85,7 +85,7 @@ def send_transcript_to_gemini(transcript):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    welcome_message = (
+    welcome_message = escape_markdown(
         "👋 *Welcome to the YouTube Transcript AI Bot!*\n\n"
         "📜 *What This Bot Can Do:*\n"
         "- Extracts the transcript from a YouTube video.\n"
@@ -97,7 +97,7 @@ def send_welcome(message):
         "3️⃣ Ask any questions about the video content!\n\n"
         "💡 Use the /restart command to start over anytime. 🚀"
     )
-    bot.reply_to(message, welcome_message, parse_mode='Markdown')
+    bot.reply_to(message, welcome_message, parse_mode='MarkdownV2')
 
 @bot.message_handler(commands=['restart'])
 def restart_session(message):
@@ -118,16 +118,18 @@ def handle_message(message):
             if not video_id:
                 bot.reply_to(
                     message,
-                    "❌ *Invalid YouTube URL!*\n"
-                    "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐",
-                    parse_mode='Markdown'
+                    escape_markdown(
+                        "❌ *Invalid YouTube URL!*\n"
+                        "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐"
+                    ),
+                    parse_mode='MarkdownV2'
                 )
                 return
 
-            fetching_msg = bot.reply_to(message, "⏳ *Fetching the transcript...* 🔍", parse_mode='Markdown')
+            fetching_msg = bot.reply_to(message, "⏳ *Fetching the transcript...* 🔍", parse_mode='MarkdownV2')
             transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
-            processing_msg = bot.reply_to(message, "🔄 *Processing transcript with Gemini AI...* 🤖", parse_mode='Markdown')
+            processing_msg = bot.reply_to(message, "🔄 *Processing transcript with Gemini AI...* 🤖", parse_mode='MarkdownV2')
             gemini_response = send_transcript_to_gemini(transcript)
 
             user_states[user_id] = {
@@ -138,7 +140,7 @@ def handle_message(message):
                 "✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤",
                 message.chat.id,
                 processing_msg.message_id,
-                parse_mode='Markdown'
+                parse_mode='MarkdownV2'
             )
             bot.delete_message(message.chat.id, fetching_msg.message_id)
 
@@ -153,16 +155,15 @@ def handle_message(message):
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(
                 message,
-                gemini_response.text,
-                parse_mode='Markdown'
+                escape_markdown(gemini_response.text),
+                parse_mode='MarkdownV2'
             )
 
     except Exception as e:
         bot.reply_to(
             message,
-            f"⚠️ *An error occurred:* {str(e)}\n"
-            "Please try again or contact support. 🙇",
-            parse_mode='Markdown'
+            escape_markdown(f"⚠️ *An error occurred:* {str(e)}\nPlease try again or contact support. 🙇"),
+            parse_mode='MarkdownV2'
         )
         print(f"Error in handle_message: {e}")
 
