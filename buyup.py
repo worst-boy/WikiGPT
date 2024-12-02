@@ -118,42 +118,24 @@ def handle_message(message):
             if not video_id:
                 bot.reply_to(
                     message,
-                    escape_markdown(
-                        "❌ *Invalid YouTube URL!*\n"
-                        "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐"
-                    ),
+                    "❌ *Invalid YouTube URL!*\n"
+                    "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐",
                     parse_mode='Markdown'
                 )
                 return
 
-            fetching_msg = bot.reply_to(
-                message,
-                escape_markdown("⏳ *Fetching the transcript...* 🔍"),
-                parse_mode='Markdown'
-            )
+            fetching_msg = bot.reply_to(message, "⏳ *Fetching the transcript...* 🔍", parse_mode='Markdown')
             transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
-            processing_msg = bot.reply_to(
-                message,
-                escape_markdown("🔄 *Processing transcript with Gemini AI...* 🤖"),
-                parse_mode='Markdown'
-            )
+            processing_msg = bot.reply_to(message, "🔄 *Processing transcript with Gemini AI...* 🤖", parse_mode='Markdown')
             gemini_response = send_transcript_to_gemini(transcript)
 
-            # Split long responses into chunks
-            gemini_response_text = escape_markdown(gemini_response)
-            if len(gemini_response_text) > 4000:
-                for chunk in [gemini_response_text[i:i + 4000] for i in range(0, len(gemini_response_text), 4000)]:
-                    bot.send_message(user_id, chunk, parse_mode='Markdown')
-            else:
-                bot.reply_to(message, gemini_response_text, parse_mode='Markdown')
-
             user_states[user_id] = {
-                "gemini_context": gemini_response_text,
+                "gemini_context": gemini_response,
                 "transcript": transcript
             }
             bot.edit_message_text(
-                escape_markdown("✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤"),
+                "✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤",
                 message.chat.id,
                 processing_msg.message_id,
                 parse_mode='Markdown'
@@ -165,27 +147,24 @@ def handle_message(message):
             user_question = escape_markdown(message.text)
 
             bot.send_chat_action(user_id, 'typing')
-            time.sleep(0.5)
+            time.sleep(.5)
 
             gemini_response = model.generate_content(f"{gemini_context}\n\nQuestion: {user_question}")
-            gemini_response_text = escape_markdown(gemini_response.text)
-
-            if len(gemini_response_text) > 4000:
-                for chunk in [gemini_response_text[i:i + 4000] for i in range(0, len(gemini_response_text), 4000)]:
-                    bot.send_message(user_id, chunk, parse_mode='Markdown')
-            else:
-                bot.reply_to(message, gemini_response_text, parse_mode='Markdown')
-
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
+            bot.reply_to(
+                message,
+                gemini_response.text,
+                parse_mode='Markdown'
+            )
 
     except Exception as e:
-        error_message = escape_markdown(
+        bot.reply_to(
+            message,
             f"⚠️ *An error occurred:* {str(e)}\n"
-            "Please try again or contact support. 🙇"
+            "Please try again or contact support. 🙇",
+            parse_mode='Markdown'
         )
-        bot.reply_to(message, error_message, parse_mode='Markdown')
         print(f"Error in handle_message: {e}")
-
 
 if __name__ == "__main__":
     try:
