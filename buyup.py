@@ -23,8 +23,8 @@ generation_config = {
 }
 
 def escape_markdown(text):
-    """Escape special characters for Markdown parsing in Telegram."""
-    return re.sub(r"([*|.])", r"\\\1", text)
+    """Simplify escaping for Markdown. Escapes only necessary special characters."""
+    return re.sub(r"(*\|.!])", r"\\\1", text)
 
 # Initialize the model
 def initialize_model(api_key, system_instruction):
@@ -42,7 +42,6 @@ system_instruction = (
     "You are now a professional. YouTube video transcript will be provided to you, "
     "and you will respond with the most organized, clean, complete, and detailed responses. "
     "Your responses are organized and detailed, always using lists, numbers, headers, etc. "
-    "You do not respond with just paragraphs but provide organized responses. "
     "You only respond based on the transcript and do not add anything else from yourself! "
     "You can speak in Persian as well and can respond in Persian too!"
 )
@@ -100,7 +99,6 @@ def send_welcome(message):
     )
     bot.reply_to(message, welcome_message, parse_mode='Markdown')
 
-
 @bot.message_handler(commands=['restart'])
 def restart_session(message):
     user_id = message.chat.id
@@ -155,14 +153,14 @@ def handle_message(message):
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             bot.reply_to(
                 message,
-                escape_markdown(gemini_response.text),
+                gemini_response.text,
                 parse_mode='Markdown'
             )
 
     except Exception as e:
         bot.reply_to(
             message,
-            f"⚠️ *An error occurred:* {escape_markdown(str(e))}\n"
+            f"⚠️ *An error occurred:* {str(e)}\n"
             "Please try again or contact support. 🙇",
             parse_mode='Markdown'
         )
