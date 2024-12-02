@@ -26,6 +26,18 @@ def escape_markdown(text):
     """Escape special characters for Markdown parsing in Telegram."""
     return re.sub(r"([_*[\]()~>#+-=|{}.!])", r"\\\1", text)
 
+def split_message_into_chunks(text, max_length=4000):
+    """Split a long message into smaller chunks."""
+    chunks = []
+    while len(text) > max_length:
+        split_index = text.rfind('\n', 0, max_length)  # Find a newline character to split
+        if split_index == -1:
+            split_index = max_length
+        chunks.append(text[:split_index])
+        text = text[split_index:]
+    chunks.append(text)
+    return chunks
+
 # Initialize the model
 def initialize_model(api_key, system_instruction):
     genai.configure(api_key=api_key)
@@ -151,11 +163,11 @@ def handle_message(message):
 
             gemini_response = model.generate_content(f"{gemini_context}\n\nQuestion: {user_question}")
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
-            bot.reply_to(
-                message,
-                gemini_response.text,
-                parse_mode='Markdown'
-            )
+            response_text = gemini_response.text
+
+            # Send in chunks if too long
+            for chunk in split_message_into_chunks(response_text):
+                bot.reply_to(message, chunk, parse_mode='Markdown')
 
     except Exception as e:
         bot.reply_to(
