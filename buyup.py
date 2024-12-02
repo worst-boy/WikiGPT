@@ -24,7 +24,7 @@ generation_config = {
 
 def escape_markdown(text):
     """Escape special characters for Markdown parsing in Telegram."""
-    return re.sub(r"([_*[]()~`>#+-=|{}.!])", r"\\\1", text)
+    return re.sub(r"([*|.])", r"\\\1", text)
 
 # Initialize the model
 def initialize_model(api_key, system_instruction):
