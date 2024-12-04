@@ -24,8 +24,9 @@ generation_config = {
 }
 
 def escape_markdown(text):
-    """Escape special characters for Markdown parsing in Telegram."""
-    return re.sub(r"([_*[\]()~>#+-=|{}.!])", r"\\\1", text)
+    """Escape only the necessary special characters for Markdown in Telegram."""
+    return re.sub(r"([_*[\]()~>#+-=|{}])", r"\\\1", text)
+
 
 def split_message_into_chunks(text, max_length=4000):
     """Split a long message into smaller chunks, avoiding broken Markdown formatting."""
