@@ -25,7 +25,10 @@ generation_config = {
 
 def escape_markdown(text):
     """Escape special characters for Markdown parsing in Telegram."""
+    if not text:
+        return text
     return re.sub(r"([_*[\]()~>#+-=|{}.!])", r"\\\1", text)
+
 
 def split_message_into_chunks(text, max_length=4000):
     """Split a long message into smaller chunks."""
@@ -139,7 +142,7 @@ def handle_predefined_phrases(message):
         if user_id not in user_states:
             bot.reply_to(
                 message,
-                "⚠️ Please send a YouTube video URL first. I'll process the transcript, and then you can use these options. 📥",
+                escape_markdown("⚠️ Please send a YouTube video URL first. I'll process the transcript, and then you can use these options. 📥"),
                 parse_mode='Markdown'
             )
             return
@@ -150,14 +153,20 @@ def handle_predefined_phrases(message):
         bot.send_chat_action(user_id, 'typing')
         time.sleep(0.5)
 
-        # Generate response based on the selected phrase
         gemini_response = model.generate_content(f"{gemini_context}\n\n{phrase}:")
+        response_text = escape_markdown(gemini_response.text)
         user_states[user_id]["gemini_context"] += f"\n\n{phrase}: {gemini_response.text}"
-        response_text = gemini_response.text
 
-        # Send the response in chunks if too long
         for chunk in split_message_into_chunks(response_text):
             bot.reply_to(message, chunk, parse_mode='Markdown')
+    except Exception as e:
+        bot.reply_to(
+            message,
+            escape_markdown(f"⚠️ *An error occurred:* {str(e)}\nPlease try again or contact support. 🙇"),
+            parse_mode='Markdown'
+        )
+        print(f"Error in handle_predefined_phrases: {e}")
+
 
     except Exception as e:
         bot.reply_to(
@@ -168,7 +177,6 @@ def handle_predefined_phrases(message):
         )
         print(f"Error in handle_predefined_phrases: {e}")
 
-@bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
         user_id = message.chat.id
@@ -180,8 +188,7 @@ def handle_message(message):
             if not video_id:
                 bot.reply_to(
                     message,
-                    "❌ *Invalid YouTube URL!*\n"
-                    "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐",
+                    escape_markdown("❌ *Invalid YouTube URL!*\nPlease send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐"),
                     parse_mode='Markdown'
                 )
                 return
@@ -197,7 +204,7 @@ def handle_message(message):
                 "transcript": transcript
             }
             bot.edit_message_text(
-                "✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤",
+                escape_markdown("✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤"),
                 message.chat.id,
                 processing_msg.message_id,
                 parse_mode='Markdown'
@@ -209,27 +216,20 @@ def handle_message(message):
             user_question = escape_markdown(message.text)
 
             bot.send_chat_action(user_id, 'typing')
-            time.sleep(.5)
+            time.sleep(0.5)
 
             gemini_response = model.generate_content(f"{gemini_context}\n\nQuestion: {user_question}")
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
-            response_text = gemini_response.text
+            response_text = escape_markdown(gemini_response.text)
 
-            # Send in chunks if too long
             for chunk in split_message_into_chunks(response_text):
                 bot.reply_to(message, chunk, parse_mode='Markdown')
 
     except Exception as e:
         bot.reply_to(
             message,
-            f"⚠️ *An error occurred:* {str(e)}\n"
-            "Please try again or contact support. 🙇",
+            escape_markdown(f"⚠️ *An error occurred:* {str(e)}\nPlease try again or contact support. 🙇"),
             parse_mode='Markdown'
         )
         print(f"Error in handle_message: {e}")
 
-if __name__ == "__main__":
-    try:
-        bot.polling(none_stop=True)
-    except Exception as e:
-        print(f"Bot polling error: {e}")
