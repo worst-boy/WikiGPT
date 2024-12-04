@@ -1,4 +1,5 @@
 import telebot
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 import google.generativeai as genai
@@ -68,6 +69,15 @@ bot = telebot.TeleBot(API_TOKEN)
 # Store user states for interaction
 user_states = {}
 
+# Predefined phrases
+PREDEFINED_PHRASES = [
+    "Explain the context of the video for me",
+    "Give me a complete summary of the video",
+    "List the most important parts",
+    "Tell me what the video is about",
+    "Highlight the key insights"
+]
+
 def extract_video_id(url):
     try:
         query = urlparse(url)
@@ -97,6 +107,11 @@ def send_transcript_to_gemini(transcript):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    # Create a custom keyboard with predefined phrases
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    for phrase in PREDEFINED_PHRASES:
+        keyboard.add(KeyboardButton(phrase))
+
     welcome_message = (
         "👋 *Welcome to the YouTube Transcript AI Bot!*\n\n"
         "📜 *What This Bot Can Do:*\n"
@@ -105,11 +120,9 @@ def send_welcome(message):
         "- Answers questions based solely on the video content.\n\n"
         "🎯 *How to Use:*\n"
         "1️⃣ Send a valid YouTube video URL.\n"
-        "2️⃣ Wait for the transcript to be processed.\n"
-        "3️⃣ Ask any questions about the video content!\n\n"
-        "💡 Use the /restart command to start over anytime. 🚀"
+        "2️⃣ Use the predefined phrases below or ask your custom questions! 🚀"
     )
-    bot.reply_to(message, welcome_message, parse_mode='Markdown')
+    bot.reply_to(message, welcome_message, reply_markup=keyboard, parse_mode='Markdown')
 
 @bot.message_handler(commands=['restart'])
 def restart_session(message):
@@ -117,6 +130,43 @@ def restart_session(message):
     if user_id in user_states:
         del user_states[user_id]
     bot.reply_to(message, "🔄 Session restarted. Send a new YouTube video URL to begin. 🚀")
+
+@bot.message_handler(func=lambda message: message.text in PREDEFINED_PHRASES)
+def handle_predefined_phrases(message):
+    try:
+        user_id = message.chat.id
+
+        if user_id not in user_states:
+            bot.reply_to(
+                message,
+                "⚠️ Please send a YouTube video URL first. I'll process the transcript, and then you can use these options. 📥",
+                parse_mode='Markdown'
+            )
+            return
+
+        phrase = message.text
+        gemini_context = user_states[user_id]["gemini_context"]
+
+        bot.send_chat_action(user_id, 'typing')
+        time.sleep(0.5)
+
+        # Generate response based on the selected phrase
+        gemini_response = model.generate_content(f"{gemini_context}\n\n{phrase}:")
+        user_states[user_id]["gemini_context"] += f"\n\n{phrase}: {gemini_response.text}"
+        response_text = gemini_response.text
+
+        # Send the response in chunks if too long
+        for chunk in split_message_into_chunks(response_text):
+            bot.reply_to(message, chunk, parse_mode='Markdown')
+
+    except Exception as e:
+        bot.reply_to(
+            message,
+            f"⚠️ *An error occurred:* {str(e)}\n"
+            "Please try again or contact support. 🙇",
+            parse_mode='Markdown'
+        )
+        print(f"Error in handle_predefined_phrases: {e}")
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
