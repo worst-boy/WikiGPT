@@ -73,11 +73,11 @@ user_states = {}
 
 # Predefined phrases
 PREDEFINED_PHRASES = [
-    "Explain the context of the video for me",
-    "Give me a complete summary of the video",
-    "List the most important parts",
-    "Tell me what the video is about",
-    "Highlight the key insights"
+    "محتویات ویدیو را برایم به شکل کامل شرح بده.",
+    "Give me a complete and detailed summery of the video.",
+    "List up the most important parts of the video",
+    "Does it worth watching?"
+
 ]
 
 def extract_video_id(url):
