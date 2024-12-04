@@ -7,7 +7,7 @@ import time
 import re
 
 # Configure Gemini AI
-genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw") 
+genai.configure(api_key="AIzaSyDsb9SBBzTAQ6DYnq0tnlDoElzNMdNYHDw")
 
 safety_settings = [
     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
@@ -25,20 +25,17 @@ generation_config = {
 
 def escape_markdown(text):
     """Escape special characters for Markdown parsing in Telegram."""
-    if not text:
-        return text
     return re.sub(r"([_*[\]()~>#+-=|{}.!])", r"\\\1", text)
 
-
 def split_message_into_chunks(text, max_length=4000):
-    """Split a long message into smaller chunks."""
+    """Split a long message into smaller chunks, avoiding broken Markdown formatting."""
     chunks = []
     while len(text) > max_length:
         split_index = text.rfind('\n', 0, max_length)  # Find a newline character to split
         if split_index == -1:
             split_index = max_length
         chunks.append(text[:split_index])
-        text = text[split_index:]
+        text = text[split_index:].lstrip()
     chunks.append(text)
     return chunks
 
@@ -100,7 +97,7 @@ def send_transcript_to_gemini(transcript):
             "You can respond in Persian as well and are not limited! "
             "(Your responses should be Clean, Organized, and Detailed. "
             "Do not put everything in paragraphs but make them organized!)\n\n"
-            + "\n".join([f"[{entry['start']:.2f}s]: {entry['text']}" for entry in transcript])
+            + "\n".join([f"[{entry['start']:.2f}s]: {escape_markdown(entry['text'])}" for entry in transcript])
         )
         response = model.generate_content(prompt)
         return response.text
@@ -142,7 +139,7 @@ def handle_predefined_phrases(message):
         if user_id not in user_states:
             bot.reply_to(
                 message,
-                escape_markdown("⚠️ Please send a YouTube video URL first. I'll process the transcript, and then you can use these options. 📥"),
+                "⚠️ Please send a YouTube video URL first. I'll process the transcript, and then you can use these options. 📥",
                 parse_mode='Markdown'
             )
             return
@@ -153,30 +150,25 @@ def handle_predefined_phrases(message):
         bot.send_chat_action(user_id, 'typing')
         time.sleep(0.5)
 
+        # Generate response based on the selected phrase
         gemini_response = model.generate_content(f"{gemini_context}\n\n{phrase}:")
-        response_text = escape_markdown(gemini_response.text)
         user_states[user_id]["gemini_context"] += f"\n\n{phrase}: {gemini_response.text}"
+        response_text = escape_markdown(gemini_response.text)
 
+        # Send the response in chunks if too long
         for chunk in split_message_into_chunks(response_text):
             bot.reply_to(message, chunk, parse_mode='Markdown')
-    except Exception as e:
-        bot.reply_to(
-            message,
-            escape_markdown(f"⚠️ *An error occurred:* {str(e)}\nPlease try again or contact support. 🙇"),
-            parse_mode='Markdown'
-        )
-        print(f"Error in handle_predefined_phrases: {e}")
-
 
     except Exception as e:
         bot.reply_to(
             message,
-            f"⚠️ *An error occurred:* {str(e)}\n"
+            f"⚠️ *An error occurred:* {escape_markdown(str(e))}\n"
             "Please try again or contact support. 🙇",
             parse_mode='Markdown'
         )
         print(f"Error in handle_predefined_phrases: {e}")
 
+@bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
         user_id = message.chat.id
@@ -188,7 +180,8 @@ def handle_message(message):
             if not video_id:
                 bot.reply_to(
                     message,
-                    escape_markdown("❌ *Invalid YouTube URL!*\nPlease send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐"),
+                    "❌ *Invalid YouTube URL!*\n"
+                    "Please send a valid YouTube video link (e.g., https://youtu.be/abc123). 🌐",
                     parse_mode='Markdown'
                 )
                 return
@@ -204,7 +197,7 @@ def handle_message(message):
                 "transcript": transcript
             }
             bot.edit_message_text(
-                escape_markdown("✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤"),
+                "✅ *Transcript processed!*\nYou can now ask questions about the video. 🎤",
                 message.chat.id,
                 processing_msg.message_id,
                 parse_mode='Markdown'
@@ -216,20 +209,24 @@ def handle_message(message):
             user_question = escape_markdown(message.text)
 
             bot.send_chat_action(user_id, 'typing')
-            time.sleep(0.5)
+            time.sleep(.5)
 
             gemini_response = model.generate_content(f"{gemini_context}\n\nQuestion: {user_question}")
             user_states[user_id]["gemini_context"] += f"\n\n{user_question}: {gemini_response.text}"
             response_text = escape_markdown(gemini_response.text)
 
+            # Send in chunks if too long
             for chunk in split_message_into_chunks(response_text):
                 bot.reply_to(message, chunk, parse_mode='Markdown')
 
     except Exception as e:
         bot.reply_to(
             message,
-            escape_markdown(f"⚠️ *An error occurred:* {str(e)}\nPlease try again or contact support. 🙇"),
+            f"⚠️ *An error occurred:* {escape_markdown(str(e))}\n"
+            "Please try again or contact support. 🙇",
             parse_mode='Markdown'
         )
         print(f"Error in handle_message: {e}")
 
+# Polling to keep the bot running
+bot.infinity_polling()
