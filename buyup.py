@@ -73,10 +73,11 @@ user_states = {}
 
 # Predefined phrases
 PREDEFINED_PHRASES = [
-    "محتویات ویدیو را برایم به شکل کامل شرح بده.",
+    "محتویات ویدیو را برایم به شکل منظم, خلاصه و با جزِیات شرح بده.",
     "Give me a complete and detailed summery of the video.",
     "List up the most important parts of the video",
     "Does it worth watching?"
+    "/restart"
 
 ]
 
